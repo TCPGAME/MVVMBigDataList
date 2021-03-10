@@ -1,0 +1,89 @@
+﻿<Window x:Class="MVVMBigDataList.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MVVMBigDataList" xmlns:viewmodel="clr-namespace:MVVMBigDataList.ViewModel"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Window.DataContext>
+        <viewmodel:VMMainWindow></viewmodel:VMMainWindow>
+    </Window.DataContext>
+    <Window.Resources>
+        <Style TargetType="ItemsControl" x:Key="Virtualizing">
+            <!--不需要使用按Item滚动-->
+            <Setter Property="VirtualizingPanel.ScrollUnit" Value="Pixel"></Setter>
+            <!--设置为循环，滑动显示出来的数据会创建一个新的界面控件，当隐藏掉的时候会将它创建的界面循环利用，对内存优化效果特别好-->
+            <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling"></Setter>
+            <!--开启虚拟化-->
+            <Setter Property="ItemsPanel">
+                <Setter.Value>
+                    <ItemsPanelTemplate>
+                        <VirtualizingStackPanel Orientation="Vertical"></VirtualizingStackPanel>
+                    </ItemsPanelTemplate>
+                </Setter.Value>
+            </Setter>
+            <!--显示滚动条  -->
+            <!--注意：ScrollViewer一定要写在Template内，否正使用ScrollViewer 包含 ItemsControl 会导致ItemsControl虚拟化失效，大坑！！-->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <ScrollViewer  x:Name="ScrollViewer" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto" CanContentScroll="True">
+                            <ItemsPresenter />
+                        </ScrollViewer>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        
+        <DataTemplate x:Key="RowTemplate">
+            <Grid Height="25" >
+                <Grid.Resources>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="White"/>
+                        <Setter Property="HorizontalAlignment" Value="Center"/>
+                        <Setter Property="VerticalAlignment" Value="Center"/>
+                    </Style>
+                </Grid.Resources>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="60"/>
+                    <ColumnDefinition Width="100*"/>
+                    <ColumnDefinition Width="100*"/>
+                    <ColumnDefinition Width="120"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{Binding Number}"/>
+                <Grid Grid.Column="0" Width="1" Background="Gray" HorizontalAlignment="Right"></Grid>
+
+                <TextBlock Grid.Column="1" Text="{Binding Time,StringFormat={}{0:HH:mm:ss}}"/>
+                <Grid Grid.Column="1" Width="1" Background="Gray" HorizontalAlignment="Right"></Grid>
+
+                <TextBlock Grid.Column="2" Text="{Binding Message}"/>
+                <Grid Grid.Column="2" Width="1" Background="Gray" HorizontalAlignment="Right"></Grid>
+
+                <WrapPanel Orientation="Horizontal"  Grid.Column="3" VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <Button Content="启动"></Button>
+                    <Button Margin="5,0,0,0"  Content="配置"></Button>
+                    <Button  Margin="5,0,0,0"  Content="删除"></Button>
+                </WrapPanel>
+                <Grid Grid.Column="3" Width="1" Background="Gray" HorizontalAlignment="Right"></Grid>
+                <Grid Height="1" Background="Gray" Grid.ColumnSpan="10" VerticalAlignment="Bottom"></Grid>
+            </Grid>
+        </DataTemplate>
+
+    </Window.Resources>
+    <Grid  Background="#333333"  >
+        <StackPanel Height="60" VerticalAlignment="Top" Orientation="Horizontal">
+            <Button Content="增加100W条数据" Width="120" Command="{Binding CmdAddMillionData}" CommandParameter="{Binding ElementName=DataList}"/>
+            <Button Content="增加1条数据" Width="120" Command="{Binding CmdAddOneData}" CommandParameter="{Binding ElementName=DataList}"/>
+            <Button Content="线程增加数据" Width="120" Command="{Binding CmdThreadAddData}" CommandParameter="{Binding ElementName=DataList}"/>
+        </StackPanel>
+
+        <Border Background="#222222" Margin="0,60,0,0" BorderBrush="Gray" BorderThickness="1">
+            <ItemsControl  
+                    x:Name="DataList"
+                    ItemsSource="{Binding WorkDatas}"             
+                    ItemTemplate="{StaticResource RowTemplate}"
+                    Style="{StaticResource Virtualizing}" />
+        </Border>
+    </Grid>
+</Window>
